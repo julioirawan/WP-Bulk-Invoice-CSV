@@ -1,10 +1,13 @@
 <?php
-/**
- * Plugin Name: Bulk Invoice CSV
- * Description: A plugin to upload student schedule files and generate bulk invoice CSVs.
- * Version: 1.0
- * Author: Julio
- */
+/*
+Plugin Name: WP Bulk Invoice CSV
+Plugin URI: https://github.com/julioirawan/WP-Bulk-Invoice-CSV
+Description: A plugin to generate bulk invoices in CSV format.
+Version: 1.0
+Author: Your Name
+Author URI: https://yourwebsite.com
+GitHub Plugin URI: https://github.com/julioirawan/WP-Bulk-Invoice-CSV
+*/
 
 // Exit if accessed directly
 if (!defined('ABSPATH')) {
