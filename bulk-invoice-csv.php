@@ -1,9 +1,9 @@
 <?php
 /*
-Plugin Name: WP Bulk Invoice CSV
+Plugin Name: Bulk Invoice CSV
 Plugin URI: https://github.com/julioirawan/WP-Bulk-Invoice-CSV
 Description: A plugin to generate bulk invoices in CSV format.
-Version: 1.0
+Version: 1.0.1
 Author: Julio
 GitHub Plugin URI: https://github.com/julioirawan/WP-Bulk-Invoice-CSV
 */
