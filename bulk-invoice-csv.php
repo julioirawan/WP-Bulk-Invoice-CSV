@@ -1,11 +1,9 @@
 <?php
 /*
 Plugin Name: Bulk Invoice CSV
-Plugin URI: https://github.com/julioirawan/WP-Bulk-Invoice-CSV
 Description: A plugin to generate bulk invoices in CSV format.
 Version: 1.0.1
 Author: Julio
-GitHub Plugin URI: https://github.com/julioirawan/WP-Bulk-Invoice-CSV
 */
 
 // Exit if accessed directly
@@ -32,6 +30,12 @@ function bulk_invoice_csv_settings_page() {
     ?>
     <div class="wrap">
         <h1>Bulk Invoice CSV</h1>
+        <?php 
+        // If CSV has been generated, display a success notice.
+        if ( isset($_GET['upload_success']) && $_GET['upload_success'] == 1 ) {
+            echo '<div class="notice notice-success is-dismissible"><p>Bulk CSV Invoice Generation Success!</p></div>';
+        }
+        ?>
         <form method="post" enctype="multipart/form-data" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
             <input type="hidden" name="action" value="bulk_invoice_csv_upload">
             
@@ -49,10 +53,18 @@ function bulk_invoice_csv_settings_page() {
             <input type="submit" name="generate_csv" value="Generate CSV" class="button button-primary">
         </form>
         <br>
-        <button id="downloadCsv" class="button button-secondary" onclick="window.location.href='<?php echo esc_url(admin_url('admin-post.php?action=bulk_invoice_csv_download')); ?>'">Download CSV</button>
+        <?php 
+        // Show the Download CSV button only if CSV was successfully generated.
+        if ( isset($_GET['upload_success']) && $_GET['upload_success'] == 1 ) {
+            ?>
+            <button id="downloadCsv" class="button button-secondary" onclick="window.location.href='<?php echo esc_url(admin_url('admin-post.php?action=bulk_invoice_csv_download')); ?>'">Download CSV</button>
+            <?php
+        }
+        ?>
     </div>
     <?php
 }
+
 
 // Handle file upload and CSV processing
 function bulk_invoice_csv_handle_upload() {
@@ -222,84 +234,3 @@ function bulk_invoice_csv_generate_file() {
     exit;
 }
 add_action('admin_post_bulk_invoice_csv_download', 'bulk_invoice_csv_generate_file');
-
-//Github Auto Update
-if ( !class_exists( 'WP_GitHub_Updater' ) ) {
-    class WP_GitHub_Updater {
-        private $plugin_file;
-        private $github_repo;
-        private $current_version;
-
-        public function __construct( $plugin_file, $github_repo, $current_version ) {
-            $this->plugin_file = $plugin_file;
-            $this->github_repo = $github_repo;
-            $this->current_version = $current_version;
-
-            add_filter( 'pre_set_site_transient_update_plugins', [$this, 'check_for_update'] );
-            add_filter( 'plugins_api', [$this, 'plugin_info'], 10, 3 );
-        }
-
-        public function check_for_update( $transient ) {
-            if ( empty( $transient->checked ) ) {
-                return $transient;
-            }
-
-            $repo_url = "https://api.github.com/repos/{$this->github_repo}/releases/latest";
-            $response = wp_remote_get( $repo_url );
-
-            if ( is_wp_error( $response ) ) {
-                return $transient;
-            }
-
-            $release_data = json_decode( wp_remote_retrieve_body( $response ) );
-
-            if ( isset( $release_data->tag_name ) && version_compare( $this->current_version, $release_data->tag_name, '<' ) ) {
-                $plugin_slug = plugin_basename( $this->plugin_file );
-
-                $transient->response[$plugin_slug] = (object) [
-                    'slug' => $plugin_slug,
-                    'new_version' => $release_data->tag_name,
-                    'package' => $release_data->assets[0]->browser_download_url ?? '',
-                    'url' => "https://github.com/{$this->github_repo}"
-                ];
-            }
-
-            return $transient;
-        }
-
-        public function plugin_info( $res, $action, $args ) {
-            if ( $action !== 'plugin_information' ) {
-                return $res;
-            }
-
-            if ( $args->slug !== plugin_basename( $this->plugin_file ) ) {
-                return $res;
-            }
-
-            $repo_url = "https://api.github.com/repos/{$this->github_repo}";
-            $response = wp_remote_get( $repo_url );
-
-            if ( is_wp_error( $response ) ) {
-                return $res;
-            }
-
-            $repo_data = json_decode( wp_remote_retrieve_body( $response ) );
-
-            $res = (object) [
-                'name' => $repo_data->name ?? 'GitHub Plugin',
-                'slug' => plugin_basename( $this->plugin_file ),
-                'version' => $this->current_version,
-                'author' => 'Julio',
-                'homepage' => "https://github.com/{$this->github_repo}",
-                'sections' => [
-                    'description' => $repo_data->description ?? 'GitHub Plugin',
-                ],
-                'download_link' => "https://github.com/{$this->github_repo}/archive/main.zip"
-            ];
-
-            return $res;
-        }
-    }
-
-    new WP_GitHub_Updater( __FILE__, 'julioirawan/WP-Bulk-Invoice-CSV', '1.0' );
-}
